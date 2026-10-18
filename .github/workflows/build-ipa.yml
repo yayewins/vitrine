@@ -42,9 +42,19 @@ jobs:
       - name: Download IPA
         run: |
           mkdir -p ipa
-          curl -fsSL "${{ inputs.ipa_url }}" -o ipa/spotify.ipa
-          case "$(file --mime-type -b ipa/spotify.ipa)" in application/zip|application/x-ios-app) ;; *) echo "::error::Not an IPA"; exit 1 ;; esac
-
+          curl -fsSL -L "${{ inputs.ipa_url }}" -o ipa/spotify.ipa
+          MIME=$(file --mime-type -b ipa/spotify.ipa)
+          echo "Detected MIME: $MIME"
+          case "$MIME" in
+            application/zip|\
+            application/x-zip|\
+            application/x-zip-compressed|\
+            application/x-ios-app|\
+            application/octet-stream) echo "IPA OK" ;;
+            text/html) echo "::error::Got an HTML page — link is blocked or expired"; exit 1 ;;
+            *) echo "::error::Unexpected type: $MIME"; exit 1 ;;
+          esac
+          
       - run: make release
 
       - uses: actions/upload-artifact@v5
