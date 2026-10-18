@@ -42,7 +42,9 @@ jobs:
       - name: Download IPA
         run: |
           mkdir -p ipa
-          curl -fsSL -L "${{ inputs.ipa_url }}" -o ipa/spotify.ipa
+          curl -fsSL -L \
+            -H "Cookie: warning=1" \
+            "${{ inputs.ipa_url }}" -o ipa/spotify.ipa
           MIME=$(file --mime-type -b ipa/spotify.ipa)
           echo "Detected MIME: $MIME"
           case "$MIME" in
